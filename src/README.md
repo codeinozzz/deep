@@ -1,19 +1,27 @@
 # AI Cladding & Facade Designer
 
-AI-powered architectural cladding and facade design assistant that generates technical specifications and photorealistic visualizations.
+AI-powered architectural cladding and facade design assistant that generates technical specifications and photorealistic visualizations using deep learning models.
+
+## Overview
+
+This project uses:
+- **Text Generation**: FLAN-T5-base (Hugging Face) for architectural specifications
+- **Image Generation**: Stable Diffusion v1.5 for photorealistic renders
+- **No paid APIs required** - fully open-source solution
 
 ## Installation
 
 ### Prerequisites
 - Python 3.8 or higher
 - pip package manager
+- 4-8GB RAM minimum (CPU mode)
 - (Optional) CUDA-compatible GPU for faster processing
 
 ### Setup
 
-1. Clone the repository or navigate to the project directory:
+1. Navigate to the project source directory:
 ```bash
-cd capstone-deep/cladding_designer
+cd src
 ```
 
 2. Create a virtual environment (recommended):
@@ -30,33 +38,76 @@ source venv/bin/activate
 venv\Scripts\activate
 ```
 
-4. Install required dependencies:
+4. Install PyTorch (choose based on your system):
 ```bash
-pip install -r requirements.txt
+# CPU only
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+
+# CUDA 11.8
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+
+# CUDA 12.1
+pip install torch torchvision
 ```
+
+5. Install remaining dependencies:
+```bash
+pip install transformers diffusers accelerate pillow
+```
+
+### First Run Setup
+
+On first run, the system will automatically download required models:
+- FLAN-T5-base (~1GB) - for text generation
+- Stable Diffusion v1.5 (~5GB) - for image generation
+
+This may take 10-20 minutes depending on your internet connection.
+Models are cached locally and reused for subsequent runs.
 
 ## How to Run
 
-### Quick Start
+### Quick Start - Text Generation Only
 
-Run the test suite with 8 predefined design scenarios:
+Test the text generation system:
 ```bash
 python test_designs.py
 ```
 
-This will generate specifications for various combinations of styles, spaces, and sizes. Results are saved in `outputs/specifications/`.
+This will generate specifications for various design scenarios using FLAN-T5-base.
+Results are saved in `outputs/specifications/`.
 
-### Custom Design Generation
+### Complete Pipeline (Specification + Render)
 
-Create a Python script or use the interactive Python shell:
+Generate both technical specification and photorealistic render:
+
+```bash
+# Basic usage
+python main.py --style rustic --space facade --size medium --colors "grey,beige"
+
+# More examples
+python main.py --style brutalism --space living_room --size small --colors "grey"
+python main.py --style minimalist --space kitchen --size medium --colors "white,beige"
+python main.py --style industrial --space facade --size large --colors "grey,black"
+```
+
+### Generate Specification Only (Faster)
+
+Skip image generation to test text generation only:
+```bash
+python main.py --style rustic --space facade --size medium --colors "grey,beige" --no-render
+```
+
+### Custom Integration
+
+Use the generator in your own Python code:
 
 ```python
 from models.design_generator import DesignGenerator
 
-# Initialize the generator
+# Initialize the generator (loads FLAN-T5-base)
 generator = DesignGenerator()
 
-# Generate a custom specification
+# Generate specification
 specification = generator.generate_specification(
     style="rustic",
     space="facade",
@@ -66,34 +117,6 @@ specification = generator.generate_specification(
 
 print(specification)
 ```
-
-### Complete Pipeline (Specification + Render)
-
-Generate both technical specification and photorealistic render:
-
-```bash
-# Rustic facade
-python main.py --style rustic --space facade --size medium --colors "grey,beige"
-
-# Brutalist living room
-python main.py --style brutalism --space living_room --size small --colors "grey"
-
-# Minimalist kitchen
-python main.py --style minimalist --space kitchen --size medium --colors "white,light wood"
-
-# Industrial office
-python main.py --style industrial --space office --size large --colors "grey,black,brick"
-```
-
-### Test Complete System
-
-Run full pipeline test with 5 design scenarios:
-
-```bash
-python test_renders.py
-```
-
-This generates both specifications and renders for multiple design combinations.
 
 ### Command Line Options
 
@@ -194,12 +217,12 @@ Generates only the technical specification without creating the render (faster f
 
 ### System Overview
 
-The AI Cladding & Facade Designer is built as a two-stage pipeline that transforms user requirements into detailed architectural specifications and photorealistic visualizations.
+The AI Cladding & Facade Designer is built as a two-stage pipeline that transforms user requirements into detailed architectural specifications and photorealistic visualizations using open-source deep learning models.
 
 ```
 User Input → Text Generation → Image Generation → Final Output
-  (Style,      (Specification)   (Photorealistic   (Spec +
-   Space,                          Render)          Render)
+  (Style,      (FLAN-T5-base)    (Stable          (Spec +
+   Space,                          Diffusion)      Render)
    Size)
 ```
 
@@ -214,16 +237,25 @@ User Input → Text Generation → Image Generation → Final Output
 
 #### 2. Text Generation Pipeline (`models/design_generator.py`)
 - **Purpose**: Generate detailed technical specifications from user parameters
-- **Technology**: Pre-trained language model (transformers)
+- **Technology**: FLAN-T5-base (Google, via Hugging Face)
+- **Model Details**:
+  - Encoder-decoder transformer architecture
+  - Fine-tuned on instruction-following tasks
+  - ~250M parameters
+  - No API key required
 - **Process**:
   1. Accepts user input (style, space, size, colors)
   2. Queries materials catalog for appropriate materials
-  3. Generates structured specification including:
-     - Material recommendations
-     - Layout patterns
-     - Installation guidelines
+  3. Uses FLAN-T5 to generate each specification section:
+     - Project overview and design philosophy
+     - Material recommendations with descriptions
+     - Color palette strategy
+     - Installation patterns and techniques
      - Technical requirements
+     - Budget estimation
+  4. Falls back to template generation if model fails
 - **Output**: Text-based specification file saved to `outputs/specifications/`
+- **Performance**: 30-60 seconds on CPU, 5-10 seconds on GPU
 
 #### 3. Image Generation Pipeline (`models/render_generator.py`)
 - **Purpose**: Create photorealistic renders from specifications
@@ -282,14 +314,18 @@ User Input → Text Generation → Image Generation → Final Output
 ### Technology Stack
 
 - **Language**: Python 3.8+
+- **Deep Learning Models**:
+  - FLAN-T5-base: Text generation (google/flan-t5-base)
+  - Stable Diffusion v1.5: Image generation (runwayml/stable-diffusion-v1-5)
 - **AI/ML Frameworks**:
   - PyTorch: Deep learning foundation
-  - Transformers: Pre-trained language models
-  - Diffusers: Stable Diffusion image generation
+  - Transformers (Hugging Face): Model loading and inference
+  - Diffusers: Stable Diffusion pipeline
   - Accelerate: Model optimization
-- **Data Processing**: NumPy, JSON
+- **Data Processing**: JSON-based material catalog
 - **Image Processing**: Pillow (PIL)
 - **Storage**: File-based outputs (specifications as .txt, renders as .png)
+- **Cost**: 100% free, no API keys or subscriptions required
 
 ### Development Roadmap
 
@@ -336,28 +372,39 @@ Installation Pattern: Horizontal with irregular joints...
 
 ### Hardware Requirements
 
-**Minimum:**
+**Minimum (CPU-only):**
 - CPU: 4 cores
-- RAM: 8GB
-- Disk: 10GB free space
-- Generation time: 3-5 minutes per render (CPU)
+- RAM: 4-8GB
+- Disk: 10GB free space (6GB for models, rest for outputs)
+- Generation time:
+  - Text: 30-60 seconds
+  - Image: 2-4 minutes
+  - Total: ~3-5 minutes per complete design
 
-**Recommended:**
+**Recommended (with GPU):**
 - GPU: NVIDIA with 6GB+ VRAM (CUDA support)
-- RAM: 16GB
-- Disk: 20GB free space
-- Generation time: 30-60 seconds per render (GPU)
+- RAM: 8-16GB
+- Disk: 15GB free space
+- Generation time:
+  - Text: 5-10 seconds
+  - Image: 30-60 seconds
+  - Total: ~1 minute per complete design
 
 ### Optimization Tips
 
-1. **First run downloads models** (~5GB for Stable Diffusion)
+1. **First run downloads models** (~6GB total: 1GB FLAN-T5 + 5GB Stable Diffusion)
+   - Models are cached in `~/.cache/huggingface/`
+   - Subsequent runs are much faster
 2. **Use GPU when available** - automatic detection enabled
-3. **Adjust inference steps** for speed/quality tradeoff:
-   - Fast: `--steps 20` (lower quality)
-   - Balanced: `--steps 50` (default)
-   - High quality: `--steps 100` (slower)
-4. **Skip rendering for planning** - use `--no-render` flag
-5. **Batch processing** - use `test_renders.py` for multiple designs
+3. **Adjust inference steps** for image quality vs speed:
+   - Fast: `--steps 20` (lower quality, ~1 min on CPU)
+   - Balanced: `--steps 50` (default, ~3 min on CPU)
+   - High quality: `--steps 100` (slower, ~5 min on CPU)
+4. **Skip rendering for planning** - use `--no-render` flag for text-only
+5. **CPU optimization**:
+   - Close other applications to free RAM
+   - FLAN-T5-base is optimized for CPU inference
+   - Consider using `--steps 20` for faster iterations
 
 ### Troubleshooting
 
@@ -375,17 +422,25 @@ python main.py --style rustic --space facade --size medium --colors "grey" --ste
 **Import errors:**
 ```bash
 # Reinstall dependencies
-pip install --upgrade -r requirements.txt
+pip install --upgrade torch transformers diffusers accelerate pillow
 ```
 
-**Authentication error with Hugging Face:**
-If you see a 401 error when loading the Stable Diffusion model:
+**Model download fails:**
 ```bash
-# Option 1: Install and login to Hugging Face CLI
+# Manually download models
+python -c "from transformers import AutoTokenizer; AutoTokenizer.from_pretrained('google/flan-t5-base')"
+python -c "from diffusers import StableDiffusionPipeline; StableDiffusionPipeline.from_pretrained('runwayml/stable-diffusion-v1-5')"
+```
+
+**Hugging Face access (if needed):**
+Both FLAN-T5-base and Stable Diffusion v1.5 are publicly available and don't require authentication. If you encounter access issues:
+```bash
 pip install huggingface_hub
 huggingface-cli login
-
-# Then accept terms at: https://huggingface.co/runwayml/stable-diffusion-v1-5
 ```
 
-The project uses `runwayml/stable-diffusion-v1-5` by default, which has fewer restrictions than other models.
+**Slow text generation:**
+- FLAN-T5 generates text section by section (6 sections total)
+- Each section takes 5-10 seconds on CPU
+- This is normal for local model inference
+- Consider using GPU for faster generation

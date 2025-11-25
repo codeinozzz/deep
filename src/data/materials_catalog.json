@@ -1,0 +1,208 @@
+{
+  "styles": {
+    "rustic": {
+      "name": "Rustic",
+      "materials": [
+        {
+          "type": "natural_stone",
+          "name": "Irregular flagstone",
+          "colors": ["grey", "beige", "brown"],
+          "texture": "rough, natural",
+          "finish": "raw, sealed",
+          "application": ["exterior", "interior", "dry", "humid"],
+          "coverage": "60-70%",
+          "price_range": "$45-65/m2"
+        },
+        {
+          "type": "wood",
+          "name": "Treated pine planks",
+          "colors": ["aged grey", "natural brown", "honey"],
+          "texture": "grain visible, weathered",
+          "finish": "matte, UV protection",
+          "application": ["exterior", "interior", "dry"],
+          "coverage": "20-30%",
+          "price_range": "$50-80/m2"
+        },
+        {
+          "type": "stucco",
+          "name": "Textured stucco",
+          "colors": ["sand beige", "terracotta", "white"],
+          "texture": "medium, rustic",
+          "finish": "matte",
+          "application": ["exterior", "interior", "dry"],
+          "coverage": "10-20%",
+          "price_range": "$25-40/m2"
+        }
+      ],
+      "palette": ["#8B8680", "#D2B48C", "#A0826D", "#6B7280"],
+      "characteristics": "warm tones, natural textures, irregular patterns"
+    },
+    "brutalism": {
+      "name": "Brutalism",
+      "materials": [
+        {
+          "type": "concrete",
+          "name": "Exposed concrete panels",
+          "colors": ["cement grey", "dark grey"],
+          "texture": "formwork marks visible, raw",
+          "finish": "matte sealer",
+          "application": ["exterior", "interior", "dry"],
+          "coverage": "70-80%",
+          "price_range": "$60-90/m2"
+        },
+        {
+          "type": "microcement",
+          "name": "Polished microcement",
+          "colors": ["dark grey", "charcoal"],
+          "texture": "smooth, polished",
+          "finish": "semi-gloss",
+          "application": ["interior", "dry", "humid"],
+          "coverage": "flooring 100%",
+          "price_range": "$70-100/m2"
+        },
+        {
+          "type": "corten_steel",
+          "name": "Weathered steel sheet",
+          "colors": ["natural rust"],
+          "texture": "controlled oxidation",
+          "finish": "raw",
+          "application": ["exterior", "interior", "dry"],
+          "coverage": "5-15%",
+          "price_range": "$120-180/m2"
+        }
+      ],
+      "palette": ["#787878", "#4A4A4A", "#A0522D", "#2C2C2C"],
+      "characteristics": "raw concrete, geometric, urban, monochromatic"
+    },
+    "minimalist": {
+      "name": "Minimalist",
+      "materials": [
+        {
+          "type": "porcelain",
+          "name": "Large format porcelain",
+          "colors": ["pure white", "off white", "light grey"],
+          "texture": "smooth, seamless",
+          "finish": "matte",
+          "application": ["interior", "humid", "dry"],
+          "coverage": "80-90%",
+          "price_range": "$55-85/m2"
+        },
+        {
+          "type": "engineered_wood",
+          "name": "Natural oak flooring",
+          "colors": ["honey light", "natural"],
+          "texture": "subtle grain",
+          "finish": "matte natural",
+          "application": ["interior", "dry"],
+          "coverage": "10-20%",
+          "price_range": "$80-120/m2"
+        },
+        {
+          "type": "quartz",
+          "name": "Compact quartz",
+          "colors": ["white with grey veins", "pure white"],
+          "texture": "smooth",
+          "finish": "matte/satin",
+          "application": ["interior", "humid", "countertops"],
+          "coverage": "countertops",
+          "price_range": "$150-250/m2"
+        }
+      ],
+      "palette": ["#FFFFFF", "#F8F8F8", "#E8D5B7", "#D3D3D3"],
+      "characteristics": "clean lines, monochromatic, smooth surfaces, hidden joints"
+    },
+    "industrial": {
+      "name": "Industrial",
+      "materials": [
+        {
+          "type": "exposed_brick",
+          "name": "Red brick veneer",
+          "colors": ["red", "brown", "burnt orange"],
+          "texture": "rough, exposed joints",
+          "finish": "raw or sealed",
+          "application": ["exterior", "interior", "dry"],
+          "coverage": "50-60%",
+          "price_range": "$40-70/m2"
+        },
+        {
+          "type": "metal",
+          "name": "Corrugated metal panels",
+          "colors": ["dark grey", "black", "galvanized"],
+          "texture": "ribbed, industrial",
+          "finish": "matte powder coat",
+          "application": ["exterior", "interior", "dry"],
+          "coverage": "20-30%",
+          "price_range": "$45-75/m2"
+        },
+        {
+          "type": "concrete",
+          "name": "Polished concrete floor",
+          "colors": ["grey", "charcoal"],
+          "texture": "smooth polished",
+          "finish": "high gloss sealer",
+          "application": ["interior", "dry"],
+          "coverage": "flooring 100%",
+          "price_range": "$50-80/m2"
+        }
+      ],
+      "palette": ["#8B4513", "#4A4A4A", "#C0C0C0", "#2C2C2C"],
+      "characteristics": "exposed materials, metal accents, urban, raw finishes"
+    }
+  },
+  "spaces": {
+    "facade": {
+      "type": "exterior_facade",
+      "considerations": [
+        "Weather resistance",
+        "UV protection",
+        "Waterproofing required",
+        "Expansion joints every 3m",
+        "Hidden drainage system"
+      ]
+    },
+    "living_room": {
+      "type": "interior_living",
+      "considerations": [
+        "Acoustic treatment",
+        "Lighting integration",
+        "Traffic durability",
+        "Visual warmth"
+      ]
+    },
+    "kitchen": {
+      "type": "interior_kitchen",
+      "considerations": [
+        "Stain resistance grade 5",
+        "Antimicrobial grout",
+        "Hydrophobic sealer",
+        "Heat resistant surfaces"
+      ]
+    }
+  },
+  "sizes": {
+    "small": {
+      "range": "< 20m2",
+      "optimization": [
+        "Light colors for visual expansion",
+        "Large format tiles (fewer joints)",
+        "Vertical elements to increase height perception"
+      ]
+    },
+    "medium": {
+      "range": "20-50m2",
+      "optimization": [
+        "Balanced material distribution",
+        "Defined zones with materials",
+        "Flexible lighting design"
+      ]
+    },
+    "large": {
+      "range": "> 50m2",
+      "optimization": [
+        "Bold material statements",
+        "Multiple texture zones",
+        "Feature walls"
+      ]
+    }
+  }
+}
