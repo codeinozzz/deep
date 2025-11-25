@@ -1,0 +1,50 @@
+DESIGN SPECIFICATION - INDUSTRIAL STYLE
+
+SPACE DETAILS:
+Type: Commercial Office
+Size: Grande (> 50m2)
+Style: Industrial
+Characteristics: exposed materials, metal accents, urban, raw finishes
+
+PRIMARY MATERIALS:
+
+1. CORRUGATED METAL PANELS (Metal)
+   Colors: dark grey, black, galvanized
+   Texture: ribbed, industrial
+   Finish: matte powder coat
+   Application: exterior, interior, dry
+   Coverage: 20-30%
+   Price: $45-75/m2
+
+2. POLISHED CONCRETE FLOOR (Concrete)
+   Colors: grey, charcoal
+   Texture: smooth polished
+   Finish: high gloss sealer
+   Application: interior, dry
+   Coverage: flooring 100%
+   Price: $50-80/m2
+
+COLOR PALETTE:
+  1. #8B4513
+  2. #4A4A4A
+  3. #C0C0C0
+  4. #2C2C2C
+
+SPACE OPTIMIZATION (GRANDE):
+  - Bold material statements
+  - Multiple texture zones
+  - Feature walls
+  - Architectural lighting
+  - Spatial hierarchy
+
+TECHNICAL CONSIDERATIONS:
+  - Professional appearance
+  - Acoustic panels
+  - Durable flooring
+  - Cable management
+
+ESTIMATED BUDGET: $42-69/m2
+
+MAINTENANCE:
+  - Corrugated metal panels: Corrosion check annually, clean as needed
+  - Polished concrete floor: Low maintenance, occasional sealing
