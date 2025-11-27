@@ -444,3 +444,287 @@ huggingface-cli login
 - Each section takes 5-10 seconds on CPU
 - This is normal for local model inference
 - Consider using GPU for faster generation
+
+---
+
+## API de Chat para Terminaciones Arquitectónicas
+
+### Descripción
+
+La aplicación ahora incluye una **API REST con FastAPI** que funciona como un chat especializado en terminaciones arquitectónicas. El sistema está diseñado para responder ÚNICAMENTE preguntas sobre:
+
+- **Enchapes** (cerámicos, porcelanatos, piedra natural, mosaicos)
+- **Pinturas** (interiores, exteriores, acabados especiales)
+- **Baños** (materiales, impermeabilización, griferías)
+- **Pisos** (cerámicos, madera, vinílicos, laminados)
+- **Acabados** arquitectónicos en general
+
+El sistema valida automáticamente que las preguntas estén relacionadas con estos temas. Si el usuario pregunta sobre temas no relacionados, el sistema responde educadamente indicando su especialización.
+
+### Instalación de Dependencias
+
+Asegúrate de tener las dependencias de la API instaladas:
+
+```bash
+pip install fastapi uvicorn pydantic
+```
+
+O instala todas las dependencias desde requirements.txt:
+
+```bash
+pip install -r requirements.txt
+```
+
+### Cómo Ejecutar la API
+
+Desde el directorio `src/`, ejecuta:
+
+```bash
+# Opción 1: Con uvicorn directamente
+uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+
+# Opción 2: Ejecutar el archivo Python
+python api/main.py
+```
+
+La API estará disponible en: `http://localhost:8000`
+
+### Documentación Automática
+
+FastAPI genera documentación interactiva automáticamente:
+
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+
+Puedes usar estas interfaces para probar los endpoints directamente desde el navegador.
+
+### Endpoints Disponibles
+
+#### 1. GET `/` - Información de la API
+
+```bash
+curl http://localhost:8000/
+```
+
+Retorna información sobre la API y sus endpoints disponibles.
+
+#### 2. GET `/health` - Estado del Servicio
+
+```bash
+curl http://localhost:8000/health
+```
+
+Verifica que el servicio esté funcionando correctamente.
+
+**Respuesta:**
+```json
+{
+  "status": "healthy",
+  "message": "Terminaciones Chat API está funcionando correctamente"
+}
+```
+
+#### 3. POST `/chat` - Enviar Mensaje al Chat
+
+Endpoint principal para interactuar con el chat.
+
+**Request:**
+```bash
+curl -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "¿Qué enchape recomiendas para un baño moderno?",
+    "generate_image": false
+  }'
+```
+
+**Parámetros:**
+- `message` (string, requerido): Pregunta o mensaje del usuario
+- `generate_image` (boolean, opcional): Si se debe generar una imagen (default: false)
+
+**Respuesta:**
+```json
+{
+  "response": "Para un baño moderno te recomiendo porcelanato de gran formato (60x120cm) en tonos grises o blancos...",
+  "on_topic": true,
+  "materials_suggested": [
+    {
+      "type": "ceramic_tile",
+      "name": "Porcelain bathroom tile",
+      "colors": ["white", "beige", "grey", "blue"],
+      "price_range": "$25-45/m2"
+    }
+  ],
+  "image_path": null
+}
+```
+
+#### 4. GET `/materials/catalog` - Catálogo Completo
+
+Obtiene el catálogo completo de materiales.
+
+```bash
+curl http://localhost:8000/materials/catalog
+```
+
+#### 5. GET `/materials/{category}` - Materiales por Categoría
+
+Obtiene materiales filtrados por categoría.
+
+**Categorías disponibles:**
+- `bathroom_finishes` - Terminaciones para baños
+- `paints` - Pinturas
+- `flooring` - Pisos
+
+```bash
+# Ejemplo: obtener materiales de baño
+curl http://localhost:8000/materials/bathroom_finishes
+
+# Ejemplo: obtener pinturas
+curl http://localhost:8000/materials/paints
+
+# Ejemplo: obtener pisos
+curl http://localhost:8000/materials/flooring
+```
+
+### Ejemplos de Uso
+
+#### Ejemplo 1: Pregunta sobre Enchapes de Baño
+
+```bash
+curl -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "¿Qué tipo de enchape es mejor para la ducha?",
+    "generate_image": false
+  }'
+```
+
+**Respuesta:** El sistema responderá con recomendaciones específicas de porcelanato, información sobre impermeabilización, y precios.
+
+#### Ejemplo 2: Pregunta sobre Pinturas
+
+```bash
+curl -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "¿Qué pintura uso para exteriores?",
+    "generate_image": false
+  }'
+```
+
+**Respuesta:** Recomendaciones de pinturas látex exterior o elastoméricas con durabilidad y precios.
+
+#### Ejemplo 3: Pregunta Fuera de Tema
+
+```bash
+curl -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "¿Cómo construyo una casa?",
+    "generate_image": false
+  }'
+```
+
+**Respuesta:**
+```json
+{
+  "response": "Me especializo únicamente en terminaciones arquitectónicas como enchapes, pinturas, baños y acabados. ¿Puedo ayudarte con alguno de estos temas?",
+  "on_topic": false,
+  "materials_suggested": [],
+  "image_path": null
+}
+```
+
+#### Ejemplo 4: Generar Imagen (Opcional)
+
+```bash
+curl -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "Dame una especificación completa para un baño minimalista",
+    "generate_image": true
+  }'
+```
+
+Esto generará tanto la respuesta de texto como una visualización usando Stable Diffusion (toma más tiempo).
+
+### Usar desde Python
+
+```python
+import requests
+
+# URL base de la API
+base_url = "http://localhost:8000"
+
+# Ejemplo 1: Enviar mensaje al chat
+response = requests.post(
+    f"{base_url}/chat",
+    json={
+        "message": "¿Qué enchape recomiendas para cocina?",
+        "generate_image": False
+    }
+)
+
+result = response.json()
+print(result["response"])
+print(result["materials_suggested"])
+
+# Ejemplo 2: Obtener catálogo de materiales
+catalog_response = requests.get(f"{base_url}/materials/catalog")
+catalog = catalog_response.json()
+print(catalog.keys())
+
+# Ejemplo 3: Obtener materiales de baño
+bathroom_materials = requests.get(f"{base_url}/materials/bathroom_finishes")
+materials = bathroom_materials.json()
+print(materials)
+```
+
+### Validación de Temas
+
+El sistema implementa validación automática de temas mediante:
+
+1. **Lista de palabras clave**: Detecta términos relacionados con terminaciones (enchape, pintura, baño, piso, etc.)
+2. **System prompt**: Instruye al modelo para enfocarse solo en terminaciones
+3. **Respuesta de redirección**: Cuando detecta temas no relacionados, responde educadamente
+
+**Palabras clave monitoreadas:**
+- Enchapes: ceramica, porcelanato, azulejo, mosaico, revestimiento, piedra, marmol
+- Pinturas: pintura, pintar, latex, esmalte, acabado, color
+- Baños: baño, ducha, sanitario, griferia, impermeabilizacion
+- Pisos: piso, suelo, floor, madera, laminado, vinil
+- Acabados: acabado, terminacion, textura, estuco, zocalo
+
+### Arquitectura de la API
+
+```
+src/
+├── api/
+│   ├── __init__.py
+│   ├── main.py              # FastAPI application
+│   └── chat_handler.py      # Chat logic handler
+├── models/
+│   ├── chat_model.py        # Chat model with topic validation
+│   ├── design_generator.py  # Design specification generator
+│   └── render_generator.py  # Image generation
+└── data/
+    ├── materials_catalog.json   # Expanded materials catalog
+    └── system_prompt.txt        # System prompt for topic restriction
+```
+
+### Notas de Rendimiento
+
+- **Primera carga**: El modelo FLAN-T5 se carga al iniciar la API (30-60 segundos)
+- **Respuestas de chat**: 5-10 segundos en CPU, 1-2 segundos en GPU
+- **Generación de imágenes**: Solo si se solicita con `generate_image: true` (2-4 minutos en CPU)
+- **Recomendación**: Para mejor rendimiento, usa GPU y deja `generate_image: false` para respuestas rápidas
+
+### Próximos Pasos
+
+Para mejoras futuras (no implementadas aún):
+- Sesiones de usuario con historial de conversación
+- Base de datos para persistencia
+- Autenticación y rate limiting
+- WebSockets para chat en tiempo real
+- Frontend web interactivo

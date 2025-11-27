@@ -149,6 +149,205 @@
       "characteristics": "exposed materials, metal accents, urban, raw finishes"
     }
   },
+  "bathroom_finishes": {
+    "ceramics": [
+      {
+        "type": "ceramic_tile",
+        "name": "Porcelain bathroom tile",
+        "colors": ["white", "beige", "grey", "blue"],
+        "sizes": ["30x60cm", "60x60cm", "30x90cm"],
+        "texture": "smooth, glossy or matte",
+        "finish": "glazed",
+        "application": ["walls", "floors", "wet areas"],
+        "water_absorption": "<0.5%",
+        "price_range": "$25-45/m2"
+      },
+      {
+        "type": "mosaic",
+        "name": "Glass mosaic tiles",
+        "colors": ["multicolor", "white", "blue", "green"],
+        "sizes": ["2x2cm", "5x5cm"],
+        "texture": "smooth, reflective",
+        "finish": "glossy",
+        "application": ["accent walls", "shower walls", "backsplash"],
+        "price_range": "$40-80/m2"
+      },
+      {
+        "type": "natural_stone",
+        "name": "Marble bathroom tile",
+        "colors": ["white with grey veins", "beige", "black"],
+        "sizes": ["30x60cm", "60x60cm"],
+        "texture": "polished or honed",
+        "finish": "polished/matte",
+        "application": ["walls", "floors", "luxury bathrooms"],
+        "maintenance": "requires sealing",
+        "price_range": "$80-150/m2"
+      }
+    ],
+    "waterproofing": [
+      {
+        "type": "membrane",
+        "name": "Liquid waterproofing membrane",
+        "application": ["shower areas", "wet zones", "under tile"],
+        "coverage": "1.5-2 kg/m2",
+        "drying_time": "24-48 hours",
+        "price_range": "$15-25/m2"
+      },
+      {
+        "type": "sheet_membrane",
+        "name": "PVC waterproof sheet",
+        "application": ["shower pans", "wet room floors"],
+        "thickness": "1-2mm",
+        "price_range": "$20-35/m2"
+      }
+    ],
+    "fixtures_finish": [
+      {
+        "type": "faucets",
+        "finishes": ["chrome", "brushed nickel", "matte black", "gold"],
+        "styles": ["modern", "classic", "industrial"],
+        "price_range": "$50-300/unit"
+      },
+      {
+        "type": "shower_systems",
+        "finishes": ["chrome", "matte black", "brushed steel"],
+        "features": ["rain shower", "hand shower", "body jets"],
+        "price_range": "$200-800/system"
+      }
+    ]
+  },
+  "paints": {
+    "interior_paints": [
+      {
+        "type": "latex_paint",
+        "name": "Interior latex paint",
+        "finishes": ["matte", "eggshell", "satin", "semi-gloss", "gloss"],
+        "colors": "custom tinting available",
+        "coverage": "10-12 m2/liter",
+        "drying_time": "2-4 hours",
+        "coats_required": "2",
+        "application": ["walls", "ceilings", "dry areas"],
+        "price_range": "$15-30/liter"
+      },
+      {
+        "type": "bathroom_paint",
+        "name": "Moisture-resistant bathroom paint",
+        "finishes": ["satin", "semi-gloss"],
+        "features": ["anti-fungal", "moisture resistant", "washable"],
+        "coverage": "10-12 m2/liter",
+        "application": ["bathrooms", "kitchens", "humid areas"],
+        "price_range": "$20-40/liter"
+      },
+      {
+        "type": "kitchen_paint",
+        "name": "Washable kitchen paint",
+        "finishes": ["satin", "semi-gloss"],
+        "features": ["stain resistant", "washable", "grease resistant"],
+        "coverage": "10-12 m2/liter",
+        "application": ["kitchen walls", "high traffic areas"],
+        "price_range": "$18-35/liter"
+      }
+    ],
+    "exterior_paints": [
+      {
+        "type": "exterior_latex",
+        "name": "Exterior latex paint",
+        "finishes": ["matte", "satin"],
+        "features": ["UV resistant", "weather resistant", "breathable"],
+        "coverage": "8-10 m2/liter",
+        "drying_time": "4-6 hours",
+        "durability": "5-8 years",
+        "application": ["facades", "exterior walls"],
+        "price_range": "$25-45/liter"
+      },
+      {
+        "type": "elastomeric_paint",
+        "name": "Elastomeric coating",
+        "features": ["crack bridging", "waterproof", "high durability"],
+        "coverage": "6-8 m2/liter",
+        "durability": "10-15 years",
+        "application": ["facades", "concrete walls", "stucco"],
+        "price_range": "$35-60/liter"
+      }
+    ],
+    "specialty_paints": [
+      {
+        "type": "textured_paint",
+        "name": "Textured wall finish",
+        "textures": ["sand", "granite", "stucco effect"],
+        "coverage": "5-7 m2/liter",
+        "application": ["feature walls", "accent walls"],
+        "price_range": "$30-50/liter"
+      },
+      {
+        "type": "chalk_paint",
+        "name": "Decorative chalk paint",
+        "finishes": ["ultra matte", "vintage look"],
+        "application": ["furniture", "accent walls", "decorative"],
+        "price_range": "$25-40/liter"
+      }
+    ]
+  },
+  "flooring": {
+    "ceramic_floors": [
+      {
+        "type": "porcelain_tile",
+        "name": "Porcelain floor tile",
+        "colors": ["grey", "beige", "white", "black", "wood-look"],
+        "sizes": ["60x60cm", "80x80cm", "60x120cm"],
+        "texture": "matte, non-slip",
+        "finish": "unglazed or glazed",
+        "application": ["living rooms", "kitchens", "bathrooms", "outdoor"],
+        "durability": "PEI 4-5",
+        "price_range": "$30-60/m2"
+      },
+      {
+        "type": "ceramic_tile",
+        "name": "Ceramic floor tile",
+        "colors": ["terracotta", "grey", "beige"],
+        "sizes": ["40x40cm", "50x50cm"],
+        "texture": "matte",
+        "finish": "glazed",
+        "application": ["interior floors", "low traffic"],
+        "durability": "PEI 3-4",
+        "price_range": "$20-40/m2"
+      }
+    ],
+    "wood_floors": [
+      {
+        "type": "engineered_hardwood",
+        "name": "Engineered wood flooring",
+        "species": ["oak", "maple", "walnut"],
+        "colors": ["natural", "light", "medium", "dark"],
+        "sizes": ["12-20cm width", "120-180cm length"],
+        "finish": "UV lacquer or oil",
+        "application": ["living rooms", "bedrooms", "dry areas"],
+        "price_range": "$60-120/m2"
+      },
+      {
+        "type": "laminate",
+        "name": "Laminate wood-look flooring",
+        "colors": ["wood tones", "grey washed", "dark walnut"],
+        "sizes": ["19cm width", "120-140cm length"],
+        "finish": "embossed texture",
+        "application": ["bedrooms", "living areas", "offices"],
+        "durability": "AC3-AC5",
+        "price_range": "$25-50/m2"
+      }
+    ],
+    "vinyl_floors": [
+      {
+        "type": "luxury_vinyl",
+        "name": "Luxury vinyl plank (LVP)",
+        "looks": ["wood", "stone", "concrete"],
+        "sizes": ["15-20cm width", "120-150cm length"],
+        "thickness": "4-6mm",
+        "features": ["waterproof", "durable", "warm underfoot"],
+        "application": ["any room", "bathrooms", "kitchens"],
+        "price_range": "$30-70/m2"
+      }
+    ]
+  },
   "spaces": {
     "facade": {
       "type": "exterior_facade",
