@@ -44,26 +44,16 @@ class ChatRequest(BaseModel):
         }
 
 
-class MaterialInfo(BaseModel):
-    type: str
-    name: str
-    colors: Optional[List[str]] = None
-    price_range: Optional[str] = None
-    application: Optional[List[str]] = None
-
-
 class ChatResponse(BaseModel):
     response: str
     on_topic: bool
-    materials_suggested: List[Dict]
     image_path: Optional[str] = None
 
     class Config:
         json_schema_extra = {
             "example": {
-                "response": "Para un baño moderno te recomiendo porcelanato...",
+                "response": "Para un baño moderno, te recomiendo considerar porcelain bathroom tile en tonos white, beige, que tiene un precio de $25-45/m2. Otra excelente alternativa es glass mosaic tiles disponible en multicolor y white, que también funciona muy bien para este tipo de aplicación. Ambas opciones ofrecen buena durabilidad y acabados de calidad.",
                 "on_topic": True,
-                "materials_suggested": [],
                 "image_path": None,
             }
         }
@@ -127,8 +117,7 @@ async def chat(request: ChatRequest):
         return ChatResponse(
             response=result["response"],
             on_topic=result["on_topic"],
-            materials_suggested=result["materials_suggested"],
-            image_path=result["image_path"],
+            image_path=result.get("image_path", None),
         )
 
     except Exception as e:

@@ -2,113 +2,166 @@
 
 AI-powered architectural cladding and facade design assistant that generates technical specifications and photorealistic visualizations using deep learning models.
 
+## Tabla de Contenidos
+- [Overview](#overview)
+- [Quick Start](#quick-start)
+- [Installation](#installation)
+- [How to Run](#how-to-run)
+  - [Option 1: CLI](#option-1-cli-línea-de-comandos---recomendado)
+  - [Option 2: Ejemplos Programáticos](#option-2-ejemplos-programáticos)
+  - [Option 3: Integración Python](#option-3-integración-en-tu-código-python)
+- [API REST Chat](#api-de-chat-para-terminaciones-arquitectónicas)
+- [Project Structure](#project-structure)
+- [Usage Examples](#usage-examples)
+- [Architecture](#application-design--architecture)
+- [Performance](#performance-notes)
+- [Troubleshooting](#troubleshooting)
+
 ## Overview
 
-This project uses:
-- **Text Generation**: FLAN-T5-base (Hugging Face) for architectural specifications
-- **Image Generation**: Stable Diffusion v1.5 for photorealistic renders
-- **No paid APIs required** - fully open-source solution
+Sistema de diseño arquitectónico con IA que genera:
+- **Especificaciones Técnicas**: Usando FLAN-T5-base (250M parámetros)
+- **Renders Fotorrealistas**: Usando Stable Diffusion v1.5
+- **Chat Especializado**: API REST para consultas sobre terminaciones
+
+**Características:**
+- 100% gratuito - sin APIs pagas ni suscripciones
+- 3 formas de uso: CLI, API REST, Integración Python
+- Funciona en CPU (lento) o GPU (rápido)
+- Modelos open-source de Hugging Face
+
+## Quick Start
+
+```bash
+# 1. Instalar dependencias
+pip install torch transformers diffusers accelerate pillow fastapi uvicorn pydantic
+
+# 2. Generar un diseño (CLI)
+python main.py --style rustic --space facade --size medium --colors "grey,beige"
+
+# 3. Usar ejemplos predefinidos
+python example_usage.py 2
+
+# 4. Iniciar API REST (opcional)
+python api/main.py
+```
 
 ## Installation
 
 ### Prerequisites
-- Python 3.8 or higher
-- pip package manager
-- 4-8GB RAM minimum (CPU mode)
-- (Optional) CUDA-compatible GPU for faster processing
+- **Python 3.8+**
+- **RAM**: 4-8GB mínimo (CPU), 8-16GB recomendado (GPU)
+- **Disk**: 10GB libres (6GB para modelos + outputs)
+- **GPU (opcional)**: NVIDIA con CUDA para procesamiento rápido
 
-### Setup
+### Paso a Paso
 
-1. Navigate to the project source directory:
+1. **Navegar al directorio del proyecto:**
 ```bash
 cd src
 ```
 
-2. Create a virtual environment (recommended):
+2. **Crear entorno virtual (recomendado):**
 ```bash
 python -m venv venv
-```
 
-3. Activate the virtual environment:
-```bash
-# Linux/Mac
+# Activar en Linux/Mac
 source venv/bin/activate
 
-# Windows
+# Activar en Windows
 venv\Scripts\activate
 ```
 
-4. Install PyTorch (choose based on your system):
+3. **Instalar PyTorch** (elegir según tu sistema):
 ```bash
-# CPU only
+# Solo CPU
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 
-# CUDA 11.8
+# Con GPU CUDA 11.8
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
 
-# CUDA 12.1
+# Con GPU CUDA 12.1+
 pip install torch torchvision
 ```
 
-5. Install remaining dependencies:
+4. **Instalar dependencias restantes:**
 ```bash
+# Para generación de diseños
 pip install transformers diffusers accelerate pillow
+
+# Para API REST (opcional)
+pip install fastapi uvicorn pydantic
 ```
 
-### First Run Setup
+O instalar todo desde requirements.txt:
+```bash
+pip install -r requirements.txt
+```
 
-On first run, the system will automatically download required models:
-- FLAN-T5-base (~1GB) - for text generation
-- Stable Diffusion v1.5 (~5GB) - for image generation
+### Primera Ejecución
 
-This may take 10-20 minutes depending on your internet connection.
-Models are cached locally and reused for subsequent runs.
+En el primer uso, el sistema descarga automáticamente:
+- **FLAN-T5-base** (~1GB) - generación de texto
+- **Stable Diffusion v1.5** (~5GB) - generación de imágenes
+
+Tiempo estimado: 10-20 minutos según conexión a internet.
+Los modelos se cachean en `~/.cache/huggingface/` y se reusan.
 
 ## How to Run
 
-### Quick Start - Text Generation Only
+### Option 1: CLI (Línea de Comandos) - Recomendado
 
-Test the text generation system:
-```bash
-python test_designs.py
-```
-
-This will generate specifications for various design scenarios using FLAN-T5-base.
-Results are saved in `outputs/specifications/`.
-
-### Complete Pipeline (Specification + Render)
-
-Generate both technical specification and photorealistic render:
+Genera especificaciones y renders usando argumentos de línea de comandos:
 
 ```bash
-# Basic usage
+# Uso básico: genera especificación + render
 python main.py --style rustic --space facade --size medium --colors "grey,beige"
 
-# More examples
-python main.py --style brutalism --space living_room --size small --colors "grey"
-python main.py --style minimalist --space kitchen --size medium --colors "white,beige"
-python main.py --style industrial --space facade --size large --colors "grey,black"
-```
-
-### Generate Specification Only (Faster)
-
-Skip image generation to test text generation only:
-```bash
+# Solo especificación (más rápido, sin render)
 python main.py --style rustic --space facade --size medium --colors "grey,beige" --no-render
+
+# Más ejemplos
+python main.py --style brutalism --space living_room --size small --colors "grey"
+python main.py --style minimalist --space kitchen --size medium --colors "white,light grey"
+python main.py --style industrial --space facade --size large --colors "grey,black"
+
+# Ajustar calidad del render (más steps = mejor calidad, más lento)
+python main.py --style rustic --space facade --size medium --colors "grey,beige" --steps 100
 ```
 
-### Custom Integration
+Resultados guardados en:
+- Especificaciones: `outputs/specifications/`
+- Renders: `outputs/renders/`
 
-Use the generator in your own Python code:
+### Option 2: Ejemplos Programáticos
+
+Usa el archivo de ejemplos para casos predefinidos:
+
+```bash
+# Ejemplo 1: Solo generación de texto
+python example_usage.py 1
+
+# Ejemplo 2: Pipeline completo (especificación + render)
+python example_usage.py 2
+
+# Ejemplo 3: Generar múltiples diseños
+python example_usage.py 3
+```
+
+### Option 3: Integración en tu Código Python
+
+Usa los generadores directamente en tu código:
 
 ```python
 from models.design_generator import DesignGenerator
+from models.render_generator import RenderGenerator
 
-# Initialize the generator (loads FLAN-T5-base)
-generator = DesignGenerator()
+# Inicializar generadores
+design_gen = DesignGenerator()
+render_gen = RenderGenerator()
 
-# Generate specification
-specification = generator.generate_specification(
+# Generar especificación
+specification = design_gen.generate_specification(
     style="rustic",
     space="facade",
     size="medium",
@@ -116,6 +169,18 @@ specification = generator.generate_specification(
 )
 
 print(specification)
+
+# Opcionalmente, generar render
+image, path = render_gen.generate_render(
+    style="rustic",
+    space="facade",
+    specification=specification,
+    colors=["grey", "beige"],
+    filename="my_design.png",
+    num_inference_steps=50
+)
+
+print(f"Render guardado en: {path}")
 ```
 
 ### Command Line Options
@@ -164,66 +229,86 @@ Options:
 ## Project Structure
 
 ```
-cladding_designer/
+src/
+├── api/
+│   ├── __init__.py
+│   ├── main.py                   # FastAPI REST API server
+│   └── chat_handler.py           # Chat logic & topic validation
 ├── data/
-│   └── materials_catalog.json    # Materials database
+│   ├── materials_catalog.json    # Materials database (150+ items)
+│   └── system_prompt.txt         # System prompt for chat restrictions
 ├── models/
-│   ├── design_generator.py       # Text generation pipeline
-│   └── render_generator.py       # Image generation pipeline
+│   ├── design_generator.py       # Text generation (FLAN-T5-base)
+│   ├── render_generator.py       # Image generation (Stable Diffusion)
+│   └── chat_model.py             # Chat model with topic validation
 ├── outputs/
-│   ├── specifications/           # Generated specifications (.txt)
+│   ├── specifications/           # Generated specs (.txt)
 │   └── renders/                  # Generated renders (.png)
-├── test_designs.py               # Test text generation only
-├── test_renders.py               # Test complete pipeline
-├── main.py                       # Main CLI integration
-└── requirements.txt              # Python dependencies
+├── main.py                       # CLI principal (argparse)
+├── example_usage.py              # Programmatic usage examples
+├── requirements.txt              # Python dependencies
+└── README.md                     # Este archivo
 ```
 
 ## Usage Examples
 
-### Example 1: Rustic Facade (Complete)
+### Example 1: Fachada Rústica (Completo)
 ```bash
 python main.py --style rustic --space facade --size medium --colors "grey,beige"
 ```
-**Output:**
-- Specification: `outputs/specifications/rustic_facade_medium.txt`
+**Salida:**
+- Especificación: `outputs/specifications/rustic_facade_medium.txt`
 - Render: `outputs/renders/rustic_facade_medium.png`
-- Materials: Natural stone, weathered wood, textured stucco
-- Color palette: Grey stone, beige sand, wood accents
+- Materiales: Piedra natural, madera envejecida, estuco texturizado
+- Paleta: Piedra gris, arena beige, acentos de madera
 
-### Example 2: Brutalist Living Room
+### Example 2: Sala Brutalista
 ```bash
 python main.py --style brutalism --space living_room --size small --colors "grey"
 ```
-**Output:**
-- Specification with exposed concrete, polished flooring, industrial accents
-- Photorealistic render with dramatic lighting and raw materials
+**Salida:**
+- Especificación con concreto expuesto, pisos pulidos, acentos industriales
+- Render fotorrealista con iluminación dramática
 
-### Example 3: Minimalist Kitchen
+### Example 3: Cocina Minimalista
 ```bash
-python main.py --style minimalist --space kitchen --size medium --colors "white,light wood"
+python main.py --style minimalist --space kitchen --size medium --colors "white,light grey"
 ```
-**Output:**
-- White porcelain tiles, light wood details, clean lines
-- High-quality architectural visualization
+**Salida:**
+- Porcelanato blanco, detalles en madera clara, líneas limpias
+- Visualización arquitectónica de alta calidad
 
-### Example 4: Text Generation Only
+### Example 4: Solo Especificación (Rápido)
 ```bash
 python main.py --style mediterranean --space facade --size large --colors "white,terracotta" --no-render
 ```
-Generates only the technical specification without creating the render (faster for planning).
+Genera solo la especificación técnica sin crear el render (útil para planificación).
+
+### Example 5: Usando Ejemplos Programáticos
+```bash
+# Genera un diseño minimalista completo
+python example_usage.py 2
+```
+Ejecuta el pipeline completo con parámetros predefinidos.
 
 ## Application Design & Architecture
 
 ### System Overview
 
-The AI Cladding & Facade Designer is built as a two-stage pipeline that transforms user requirements into detailed architectural specifications and photorealistic visualizations using open-source deep learning models.
+El sistema ofrece **3 formas de uso** para adaptarse a diferentes necesidades:
+
+1. **CLI (main.py)**: Interfaz de línea de comandos para generación rápida
+2. **API REST (api/main.py)**: Chat especializado en terminaciones arquitectónicas
+3. **Integración Python (example_usage.py)**: Uso programático de los modelos
+
+Todos utilizan el mismo pipeline de dos etapas:
 
 ```
-User Input → Text Generation → Image Generation → Final Output
+User Input → Text Generation → Image Generation → Output
   (Style,      (FLAN-T5-base)    (Stable          (Spec +
-   Space,                          Diffusion)      Render)
-   Size)
+   Space,         250M params      Diffusion v1.5)  Render)
+   Size,
+   Colors)
 ```
 
 ### Architecture Components
@@ -270,46 +355,55 @@ User Input → Text Generation → Image Generation → Final Output
 ### Data Flow
 
 ```
-┌─────────────────┐
-│   User Input    │
-│  (Parameters)   │
-└────────┬────────┘
-         │
-         v
-┌─────────────────────────┐
-│  Design Generator       │
-│  - Load materials DB    │
-│  - Filter by criteria   │
-│  - Generate spec        │
-└────────┬────────────────┘
-         │
-         v
-┌─────────────────────────┐
-│  Specification File     │
-│  (.txt in outputs/)     │
-└────────┬────────────────┘
-         │
-         v
-┌─────────────────────────┐
-│  Render Generator       │
-│  - Parse specification  │
-│  - Create prompt        │
-│  - Generate image       │
-└────────┬────────────────┘
-         │
-         v
-┌─────────────────────────┐
-│  Photorealistic Render  │
-│  (.png in outputs/)     │
-└─────────────────────────┘
+                    ┌─────────────────┐
+                    │   User Input    │
+                    └────────┬────────┘
+                             │
+              ┌──────────────┼──────────────┐
+              │              │              │
+              v              v              v
+       ┌──────────┐   ┌──────────┐   ┌──────────┐
+       │ CLI      │   │ API REST │   │ Python   │
+       │ main.py  │   │ FastAPI  │   │ examples │
+       └─────┬────┘   └─────┬────┘   └─────┬────┘
+             │              │              │
+             └──────────────┼──────────────┘
+                            │
+                            v
+              ┌─────────────────────────┐
+              │  Design Generator       │
+              │  - FLAN-T5-base model   │
+              │  - Materials catalog    │
+              │  - Generate spec        │
+              └────────┬────────────────┘
+                       │
+                       v
+              ┌─────────────────────────┐
+              │  Specification (.txt)   │
+              └────────┬────────────────┘
+                       │
+                       v
+              ┌─────────────────────────┐
+              │  Render Generator       │
+              │  - Stable Diffusion     │
+              │  - Create prompt        │
+              │  - Generate image       │
+              └────────┬────────────────┘
+                       │
+                       v
+              ┌─────────────────────────┐
+              │   Output (.png + .txt)  │
+              └─────────────────────────┘
 ```
 
 ### Design Decisions
 
-1. **Modular Pipeline**: Separate text and image generation allows independent development and testing
-2. **Catalog-Based Approach**: Materials database ensures realistic, buildable specifications
-3. **Structured Outputs**: Standardized file formats enable easy integration with external tools
-4. **Extensible Options**: Style/space/size parameters can be expanded without core changes
+1. **Múltiples Interfaces**: CLI, API REST, y Python directo para diferentes casos de uso
+2. **Pipeline Modular**: Generación de texto e imagen independientes permite desarrollo y testing separado
+3. **Catálogo de Materiales**: Base de datos garantiza especificaciones realistas y construibles
+4. **Modelos Open-Source**: FLAN-T5 y Stable Diffusion - sin APIs pagas ni límites de uso
+5. **Topic Validation**: API con validación de temas para enfoque especializado
+6. **Salidas Estructuradas**: Formatos estandarizados (.txt, .png) para integración fácil
 
 ### Technology Stack
 
@@ -329,26 +423,33 @@ User Input → Text Generation → Image Generation → Final Output
 
 ### Development Roadmap
 
-**Week 1-2**: Text Generation Pipeline
+**Phase 1**: Text Generation Pipeline ✅
 - Material catalog design
 - Specification generator implementation
-- Test suite with 8 scenarios
-- Status: ✅ Completed
+- FLAN-T5-base integration
+- CLI interface (main.py)
+- Example usage scripts
 
-**Week 3-4**: Image Generation Pipeline
-- Stable Diffusion integration
+**Phase 2**: Image Generation Pipeline ✅
+- Stable Diffusion v1.5 integration
 - Prompt engineering for architectural renders
 - Image quality optimization
-- Full pipeline integration with main.py
-- CLI interface with argparse
-- Status: ✅ Completed
+- Complete pipeline integration
+
+**Phase 3**: REST API & Chat ✅
+- FastAPI REST API
+- Chat model for architectural finishes
+- Topic validation system
+- Material recommendations
+- Multi-endpoint architecture
 
 **Future Enhancements**:
-- Web interface for easier user interaction
+- Frontend web interface
+- User sessions and conversation history
+- Database persistence
 - 3D model generation
-- Cost estimation based on materials
-- Interactive material customization
-- Multi-language support (English, Spanish)
+- Real-time cost estimation
+- Multi-language support
 
 ### Output Examples
 
@@ -698,19 +799,20 @@ El sistema implementa validación automática de temas mediante:
 
 ### Arquitectura de la API
 
+El módulo `api/` implementa un servidor REST con FastAPI:
+
 ```
-src/
-├── api/
-│   ├── __init__.py
-│   ├── main.py              # FastAPI application
-│   └── chat_handler.py      # Chat logic handler
-├── models/
-│   ├── chat_model.py        # Chat model with topic validation
-│   ├── design_generator.py  # Design specification generator
-│   └── render_generator.py  # Image generation
+api/
+├── main.py              # FastAPI app, endpoints, CORS config
+└── chat_handler.py      # Lógica del chat y validación de temas
+
+Integra con:
+├── models/chat_model.py        # Modelo FLAN-T5 para chat
+├── models/design_generator.py  # Generador de especificaciones
+├── models/render_generator.py  # Generador de imágenes
 └── data/
-    ├── materials_catalog.json   # Expanded materials catalog
-    └── system_prompt.txt        # System prompt for topic restriction
+    ├── materials_catalog.json  # Catálogo expandido
+    └── system_prompt.txt       # Restricciones de tema
 ```
 
 ### Notas de Rendimiento
@@ -728,3 +830,60 @@ Para mejoras futuras (no implementadas aún):
 - Autenticación y rate limiting
 - WebSockets para chat en tiempo real
 - Frontend web interactivo
+
+---
+
+## Resumen de Comandos Principales
+
+### Generación de Diseños
+
+```bash
+# Diseño completo (especificación + render)
+python main.py --style rustic --space facade --size medium --colors "grey,beige"
+
+# Solo especificación (rápido)
+python main.py --style rustic --space facade --size medium --colors "grey,beige" --no-render
+
+# Alta calidad (más lento)
+python main.py --style rustic --space facade --size medium --colors "grey,beige" --steps 100
+
+# Ejemplo programático
+python example_usage.py 2
+```
+
+### API REST
+
+```bash
+# Iniciar servidor
+python api/main.py
+
+# Documentación interactiva
+# http://localhost:8000/docs
+
+# Enviar consulta
+curl -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "¿Qué enchape recomiendas para baño moderno?", "generate_image": false}'
+```
+
+### Instalación
+
+```bash
+# Instalación completa
+pip install torch transformers diffusers accelerate pillow fastapi uvicorn pydantic
+
+# O desde requirements.txt
+pip install -r requirements.txt
+```
+
+## Soporte
+
+Para problemas o preguntas:
+1. Revisa la sección [Troubleshooting](#troubleshooting)
+2. Verifica los [Performance Notes](#performance-notes) para optimizar rendimiento
+3. Revisa los [Usage Examples](#usage-examples) para casos de uso comunes
+
+---
+
+**Última actualización**: 2025-01-27
+**Versión**: 1.0 - Proyecto Mid-Term Deep Learning CSAI-353

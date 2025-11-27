@@ -28,11 +28,10 @@ class ChatHandler:
         # Generate chat response
         response_data = self.chat_model.generate_response(message)
 
+        # Simplified response - only return the conversational text
         result = {
             "response": response_data["response"],
             "on_topic": response_data["on_topic"],
-            "materials_suggested": response_data["materials_suggested"],
-            "image_path": None,
         }
 
         # If not on topic, return early
@@ -46,13 +45,7 @@ class ChatHandler:
             # Check if message contains specification request
             if self._is_specification_request(message):
                 image_path = self._generate_full_specification(message)
-                result["image_path"] = image_path
-            else:
-                # Generate simple image based on materials suggested
-                if response_data["materials_suggested"]:
-                    image_path = self._generate_material_visualization(
-                        response_data["materials_suggested"]
-                    )
+                if image_path:
                     result["image_path"] = image_path
 
         return result
@@ -132,11 +125,6 @@ class ChatHandler:
         except Exception as e:
             print(f"Error generating full specification: {e}")
             return None
-
-    def _generate_material_visualization(
-        self, materials: list
-    ) -> Optional[str]:
-        return None
 
     def get_materials_catalog(self) -> dict:
         return self.chat_model.catalog

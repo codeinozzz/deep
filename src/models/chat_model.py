@@ -70,7 +70,7 @@ class TerminacionesChatModel:
             "esmalte",
             "acabado",
             "color",
-            # Baños
+            # Baños y áreas húmedas
             "baño",
             "ducha",
             "shower",
@@ -79,6 +79,11 @@ class TerminacionesChatModel:
             "llave",
             "impermeabili",
             "humedad",
+            "piscina",
+            "pool",
+            "spa",
+            "jacuzzi",
+            "alberca",
             # Pisos
             "piso",
             "suelo",
@@ -101,6 +106,12 @@ class TerminacionesChatModel:
             "estuco",
             "zocalo",
             "moldura",
+            # Espacios exteriores
+            "terraza",
+            "balcon",
+            "patio",
+            "exterior",
+            "fachada",
         ]
 
         print("TerminacionesChatModel ready")
@@ -126,31 +137,23 @@ class TerminacionesChatModel:
                 "materials_suggested": [],
             }
 
-        # Generate response using model
-        if self.model is None or self.tokenizer is None:
-            return {
-                "response": "El modelo no está disponible en este momento.",
-                "on_topic": True,
-                "materials_suggested": [],
-            }
-
         try:
-            # Build prompt with system context
-            prompt = self._build_prompt(user_message, context)
-
-            # Generate with model
-            response_text = self._generate_with_model(prompt, max_length=300)
-
             # Extract relevant materials from catalog
             materials_suggested = self._extract_relevant_materials(user_message)
 
-            # Enhance response with catalog information
-            enhanced_response = self._enhance_response_with_catalog(
-                response_text, materials_suggested
+            # Use AI model to generate initial response
+            if self.model is not None and self.tokenizer is not None:
+                ai_response = self._generate_ai_intro(user_message, materials_suggested)
+            else:
+                ai_response = None
+
+            # Generate natural language response with AI intro
+            response_text = self._generate_natural_response(
+                user_message, materials_suggested, ai_intro=ai_response
             )
 
             return {
-                "response": enhanced_response,
+                "response": response_text,
                 "on_topic": True,
                 "materials_suggested": materials_suggested,
             }
@@ -163,22 +166,62 @@ class TerminacionesChatModel:
                 "materials_suggested": [],
             }
 
+    def _generate_ai_intro(
+        self, user_message: str, materials: List[Dict]
+    ) -> Optional[str]:
+        """Use FLAN-T5 to generate a natural, contextual introduction"""
+        try:
+            # Create a context-aware prompt
+            materials_context = ""
+            if materials:
+                material_names = [m.get("name", "") for m in materials[:2]]
+                materials_context = f"Considering materials like {', '.join(material_names)}."
+
+            prompt = f"""You are a helpful architectural finishes consultant. Answer this question naturally in Spanish (1-2 sentences).
+
+Question: {user_message}
+{materials_context}
+
+Natural answer:"""
+
+            inputs = self.tokenizer(
+                prompt, return_tensors="pt", max_length=512, truncation=True
+            ).to(self.device)
+
+            with torch.no_grad():
+                outputs = self.model.generate(
+                    **inputs,
+                    max_length=100,
+                    min_length=15,
+                    num_beams=4,
+                    temperature=0.9,
+                    do_sample=True,
+                    top_p=0.95,
+                    repetition_penalty=1.3,
+                )
+
+            generated = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+            return generated.strip() if len(generated.strip()) > 10 else None
+
+        except Exception as e:
+            print(f"Error generating AI intro: {e}")
+            return None
+
     def _build_prompt(
         self, user_message: str, context: Optional[List[str]] = None
     ) -> str:
-        prompt = f"""You are an expert in architectural finishes. Answer the following question professionally and technically.
-Focus on: tiles, paints, bathrooms, flooring, and architectural finishes.
+        prompt = f"""Answer this question about architectural finishes in Spanish. Be friendly and give a short recommendation.
 
-Question: {user_message}
+Pregunta: {user_message}
 
-Provide a helpful, concise answer with specific recommendations:"""
+Respuesta recomendada:"""
 
         if context:
-            prompt = f"Previous context: {' '.join(context[-3:])}\n\n" + prompt
+            prompt = f"Contexto previo: {' '.join(context[-3:])}\n\n" + prompt
 
         return prompt
 
-    def _generate_with_model(self, prompt: str, max_length: int = 300) -> str:
+    def _generate_with_model(self, prompt: str, max_length: int = 150) -> str:
         inputs = self.tokenizer(
             prompt, return_tensors="pt", max_length=512, truncation=True
         ).to(self.device)
@@ -187,10 +230,13 @@ Provide a helpful, concise answer with specific recommendations:"""
             outputs = self.model.generate(
                 **inputs,
                 max_length=max_length,
+                min_length=20,
                 num_beams=4,
                 early_stopping=True,
-                temperature=0.7,
+                temperature=0.8,
                 do_sample=True,
+                top_p=0.92,
+                repetition_penalty=1.2,
             )
 
         generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
@@ -199,6 +245,14 @@ Provide a helpful, concise answer with specific recommendations:"""
     def _extract_relevant_materials(self, user_message: str) -> List[Dict]:
         materials = []
         message_lower = user_message.lower()
+
+        # Check for specific water-related areas (piscina, spa, etc.)
+        if any(word in message_lower for word in ["piscina", "pool", "spa", "jacuzzi", "alberca"]):
+            # For pools/water areas, recommend ceramic/porcelain materials
+            if "bathroom_finishes" in self.catalog:
+                ceramics = self.catalog["bathroom_finishes"].get("ceramics", [])
+                # Filter water-resistant materials
+                materials.extend([m for m in ceramics if m.get("water_absorption") and float(m.get("water_absorption", "1%").replace("%", "").replace("<", "")) < 1][:2])
 
         # Check bathroom finishes
         if any(
@@ -211,11 +265,22 @@ Provide a helpful, concise answer with specific recommendations:"""
         # Check paints
         if any(word in message_lower for word in ["pintura", "paint", "pintar"]):
             if "paints" in self.catalog:
-                interior_paints = self.catalog["paints"].get("interior_paints", [])
-                materials.extend(interior_paints[:2])
+                # Check if exterior or interior
+                if any(word in message_lower for word in ["exterior", "afuera", "outside", "fachada"]):
+                    exterior_paints = self.catalog["paints"].get("exterior_paints", [])
+                    materials.extend(exterior_paints[:2])
+                else:
+                    interior_paints = self.catalog["paints"].get("interior_paints", [])
+                    materials.extend(interior_paints[:2])
 
         # Check flooring
         if any(word in message_lower for word in ["piso", "floor", "suelo"]):
+            if "flooring" in self.catalog:
+                ceramic_floors = self.catalog["flooring"].get("ceramic_floors", [])
+                materials.extend(ceramic_floors[:2])
+
+        # Check for outdoor/wet areas keywords
+        if any(word in message_lower for word in ["exterior", "outdoor", "terraza", "balcon", "patio"]):
             if "flooring" in self.catalog:
                 ceramic_floors = self.catalog["flooring"].get("ceramic_floors", [])
                 materials.extend(ceramic_floors[:2])
@@ -228,37 +293,146 @@ Provide a helpful, concise answer with specific recommendations:"""
 
         return materials[:3]  # Limit to 3 materials
 
-    def _enhance_response_with_catalog(
-        self, response: str, materials: List[Dict]
+    def _generate_natural_response(
+        self, user_message: str, materials: List[Dict], ai_intro: Optional[str] = None
     ) -> str:
+        """Generate a natural language response with AI-generated intro and material details"""
+
+        import random
+
+        # Use AI-generated intro if available, otherwise generate contextual intro
+        if ai_intro and len(ai_intro) > 10:
+            intro = ai_intro + " "
+        else:
+            # Fallback: generate contextual intro with variety
+            message_lower = user_message.lower()
+            intros = []
+
+            if any(word in message_lower for word in ["baño", "bath", "ducha", "shower"]):
+                base = "baño"
+                if "moderno" in message_lower:
+                    base += " moderno"
+                elif "rustic" in message_lower or "rústico" in message_lower:
+                    base += " rústico"
+                intros = [
+                    f"Para un {base}, ",
+                    f"Si buscas materiales para un {base}, ",
+                    f"En el caso de un {base}, ",
+                ]
+            elif any(word in message_lower for word in ["pintura", "paint", "pintar"]):
+                if any(word in message_lower for word in ["exterior", "afuera", "fachada"]):
+                    intros = [
+                        "Para pintura de exteriores, ",
+                        "Si necesitas pintar el exterior, ",
+                        "En cuanto a pinturas exteriores, ",
+                    ]
+                else:
+                    intros = [
+                        "Para pintura de interiores, ",
+                        "Si quieres pintar interiores, ",
+                        "Para espacios interiores, ",
+                    ]
+            elif any(word in message_lower for word in ["piso", "floor", "suelo"]):
+                if "cocina" in message_lower:
+                    intros = [
+                        "Para el piso de cocina, ",
+                        "Si buscas piso para la cocina, ",
+                        "En cocinas, para el piso ",
+                    ]
+                else:
+                    intros = [
+                        "Para pisos, ",
+                        "Si necesitas piso, ",
+                        "En cuanto a pisos, ",
+                    ]
+            else:
+                intros = [
+                    "Para tu proyecto, ",
+                    "En este caso, ",
+                    "Te puedo ayudar: ",
+                ]
+
+            intro = random.choice(intros) if intros else "Para tu proyecto, "
+
         if not materials:
-            return response
+            # More varied responses when no materials found
+            no_material_responses = [
+                "te sugiero consultar con un especialista que pueda evaluar tu caso específico.",
+                "lo ideal sería que un profesional evalúe las condiciones particulares de tu espacio.",
+                "te recomiendo buscar asesoría profesional para encontrar la mejor solución.",
+            ]
+            return intro + random.choice(no_material_responses)
 
-        enhanced = response + "\n\n"
+        # Generate response with materials
+        if len(materials) == 1:
+            material = materials[0]
+            name = material.get("name", "este material")
+            price = material.get("price_range", "precio variable")
+            colors = material.get("colors", [])
+            application = material.get("application", [])
 
-        if materials:
-            enhanced += "Materiales recomendados:\n"
-            for i, material in enumerate(materials, 1):
-                name = material.get("name", "Material")
-                material_type = material.get("type", "").replace("_", " ").title()
-                price = material.get("price_range", "Precio variable")
+            # Varied recommendation phrases
+            rec_phrases = [
+                f"te recomiendo usar {name.lower()}",
+                f"una excelente opción es {name.lower()}",
+                f"te sugiero {name.lower()}",
+            ]
+            response = intro + random.choice(rec_phrases)
 
-                enhanced += f"\n{i}. {name}"
-                if material_type:
-                    enhanced += f" ({material_type})"
-                enhanced += f"\n   Precio: {price}"
+            if application:
+                response += f" que funciona muy bien para {' y '.join(application[:2])}"
 
-                # Add colors if available
-                colors = material.get("colors", [])
-                if colors:
-                    enhanced += f"\n   Colores: {', '.join(colors[:3])}"
+            if colors and len(colors) > 1:
+                response += f". Lo encuentras en tonos como {', '.join(colors[:3])}"
+            elif colors:
+                response += f" en tono {colors[0]}"
 
-                # Add application if available
-                application = material.get("application", [])
-                if application:
-                    enhanced += f"\n   Aplicación: {', '.join(application[:3])}"
+            response += f", con un precio aproximado de {price}. Es una opción confiable y de buena calidad."
 
-        return enhanced
+        else:
+            # Multiple materials with variety
+            material1 = materials[0]
+            name1 = material1.get("name", "material")
+            colors1 = material1.get("colors", [])
+            price1 = material1.get("price_range", "precio variable")
+
+            rec_starts = [
+                f"te recomiendo considerar {name1.lower()}",
+                f"una buena opción es {name1.lower()}",
+                f"podrías usar {name1.lower()}",
+            ]
+            response = intro + random.choice(rec_starts)
+
+            if colors1:
+                response += f" en tonos {', '.join(colors1[:2])}"
+
+            response += f", que cuesta alrededor de {price1}"
+
+            if len(materials) > 1:
+                material2 = materials[1]
+                name2 = material2.get("name", "material")
+                colors2 = material2.get("colors", [])
+
+                alt_phrases = [
+                    f". Otra alternativa es {name2.lower()}",
+                    f". También puedes considerar {name2.lower()}",
+                    f". Como segunda opción, {name2.lower()}",
+                ]
+                response += random.choice(alt_phrases)
+
+                if colors2:
+                    response += f" disponible en {' y '.join(colors2[:2])}"
+
+                response += f", que también da buenos resultados"
+
+            endings = [
+                ". Ambas son opciones confiables.",
+                ". Las dos ofrecen buena durabilidad.",
+                ". Cualquiera de las dos funciona bien.",
+            ]
+            response += random.choice(endings)
+
+        return response
 
     def get_materials_by_category(self, category: str) -> List[Dict]:
         if category == "bathroom_finishes":
